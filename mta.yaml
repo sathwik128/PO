@@ -1,0 +1,159 @@
+_schema-version: "3.3"
+ID: PO
+description: A simple CAP project
+version: 1.0.0
+modules:
+- name: PO-srv
+  type: nodejs
+  path: gen/srv
+  requires:
+  - name: PO-db
+  - name: PO-xsuaa
+  provides:
+  - name: srv-api
+    properties:
+      srv-url: ${default-url}
+  parameters:
+    buildpack: nodejs_buildpack
+  build-parameters:
+    builder: npm-ci
+- name: PO-db-deployer
+  type: hdb
+  path: gen/db
+  requires:
+  - name: PO-db
+  parameters:
+    buildpack: nodejs_buildpack
+- name: PO-approuter
+  type: approuter.nodejs
+  path: app
+  requires:
+  - name: srv-api
+    group: destinations
+    properties:
+      forwardAuthToken: true
+      name: srv-api
+      url: ~{srv-url}
+  - name: PO-xsuaa
+  - name: PO-destination-service
+    group: destinations
+    properties:
+      forwardAuthToken: false
+      name: ui5
+      url: https://ui5.sap.com
+  parameters:
+    disk-quota: 512M
+    memory: 512M
+- name: PO-app-content
+  type: com.sap.application.content
+  path: .
+  requires:
+  - name: PO-html5-repo-host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - artifacts:
+      - nspurord.zip
+      name: nspurord
+      target-path: resources/
+- name: PO-destination-content
+  type: com.sap.application.content
+  requires:
+    - name: PO-destination-service
+      parameters:
+        content-target: true
+
+    - name: PO-html5-repo-host
+      parameters:
+        service-key:
+          name: PO-html5-repo-host-key
+
+    - name: PO-xsuaa
+      parameters:
+        service-key:
+          name: PO-xsuaa-key
+
+  parameters:
+    content:
+      instance:
+        existing_destinations_policy: update
+        destinations:
+          - Name: PO_html_repo_host
+            ServiceInstanceName: PO-html5-service
+            ServiceKeyName: PO-html5-repo-host-key
+            sap.cloud.service: PO
+
+          - Name: PO_uaa
+            Authentication: OAuth2UserTokenExchange
+            ServiceInstanceName: PO-xsuaa
+            ServiceKeyName: PO-xsuaa-key
+            sap.cloud.service: PO
+
+  build-parameters:
+    no-source: true
+- name: nspurord
+  type: html5
+  path: app/purord
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+resources:
+- name: PO-db
+  type: com.sap.xs.hdi-container
+  parameters:
+    service: hana
+    service-plan: hdi-shared
+- name: PO-xsuaa
+  type: org.cloudfoundry.managed-service
+  parameters:
+    path: xs-security.json
+    service: xsuaa
+    service-name: PO-xsuaa
+    service-plan: application
+- name: PO-html5-repo-host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-name: PO-html5-service
+    service-plan: app-host
+- name: PO-destination-service
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      HTML5Runtime_enabled: true
+      init_data:
+        instance:
+          destinations:
+          - Authentication: NoAuthentication
+            Name: ui5
+            ProxyType: Internet
+            Type: HTTP
+            URL: https://ui5.sap.com
+          - Authentication: NoAuthentication
+            HTML5.DynamicDestination: true
+            HTML5.ForwardAuthToken: true
+            Name: srv-api
+            ProxyType: Internet
+            Type: HTTP
+            URL: ~{srv-api/srv-url}
+          existing_destinations_policy: update
+    service: destination
+    service-name: PO-destination-service
+    service-plan: lite
+  requires:
+  - name: srv-api
+parameters:
+  deploy_mode: html5-repo
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+  - builder: custom
+    commands:
+    - npm install --legacy-peer-deps
+    - npx cds build --production

@@ -1,0 +1,16 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+     "start": "node node_modules/@sap/approuter/approuter.js",
+     "build:cf": "ui5 build --clean-dest --dest dist"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@sap/approuter": "^22.0.1"
+  }
+}

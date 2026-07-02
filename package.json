@@ -1,0 +1,79 @@
+{
+  "name": "PO",
+  "version": "1.0.0",
+  "dependencies": {
+    "@cap-js-community/odata-v2-adapter": "^1.15.12",
+    "@cap-js/hana": "^2",
+    "@sap/cds": "^9",
+    "@sap/xsenv": "^6.2.1",
+    "@sap/xssec": "^4.13.0",
+    "hdb": "^2.27.1",
+    "passport": "^0.7.0"
+  },
+  "devDependencies": {
+    "@cap-js/sqlite": "^2.4.0",
+    "@sap-ux/eslint-plugin-fiori-tools": "^10.6.5",
+    "@sap/cds-dk": "^9.9.2",
+    "@sap/ux-ui5-tooling": "^1.27.0",
+    "@ui5/cli": "^3.11.13",
+    "cds-plugin-ui5": "^0.13.0",
+    "eslint": "^10.5.0",
+    "mbt": "^1.2.49",
+    "rimraf": "^5.0.10"
+  },
+  "scripts": {
+    "start": "cds-serve",
+    "watch-purchaseord": "cds watch --open com.po.purchaseord/index.html?sap-ui-xx-viewCache=false --livereload false",
+    "watch-cappo": "cds watch --open com.cappo/index.html?sap-ui-xx-viewCache=false --livereload false",
+    "undeploy": "cf undeploy PO --delete-services --delete-service-keys --delete-service-brokers",
+    "build": "rimraf resources mta_archives && mbt build --mtar archive",
+    "deploy": "cf deploy mta_archives/archive.mtar --retries 1",
+    "watch-purord": "cds watch --open ns.purord/index.html?sap-ui-xx-viewCache=false --livereload false"
+  },
+  "private": true,
+  "workspaces": [
+    "app/*"
+  ],
+  "cds": {
+    "cov2ap": {},
+    "requires": {
+      "auth": {
+        "[production]": {
+          "kind": "xsuaa",
+          "strategy": "JWT"
+        },
+        "[development]": {
+          "strategy": "mock",
+          "users": {
+            "sathwik": {
+              "roles": [
+                "Admin"
+              ],
+              "userAttributes": {
+                "BankName": [
+                  "$UNRESTRICTED"
+                ]
+              }
+            },
+            "ananya": {
+              "roles": [
+                "Viewer"
+              ],
+              "userAttributes": {
+                "BankName": [
+                  "My Bank of San Francisco",
+                  "My Bank of London",
+                  "My Bank of New York"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "sapux": [
+    "app/purchaseord",
+    "app/purord"
+  ]
+}

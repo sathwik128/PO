@@ -1,0 +1,167 @@
+//get all entities
+# GET http://localhost:4004/odata/v2/CatalogService/
+
+//for metadata
+# GET http://localhost:4004/odata/v2/CatalogService/$metadata 
+
+//get all employees
+# GET http://localhost:4004/odata/v2/CatalogService/EmployeeSet
+
+//for entity data
+# GET http://localhost:4004/odata/v2/CatalogService/EmployeeSet?$top=2
+
+//post call - create new employee
+
+# POST http://localhost:4004/odata/v4/CatalogService/EmployeeSet
+# Content-Type: application/json
+
+# {
+#   "ID": "02BD2137-0890-1EEA-A6C2-BB55C19783FB",
+#   "nameFirst": "Sujay",
+#   "nameMiddle": null,
+#   "nameLast": "Spring",
+#   "nameInitials": null,
+#   "sex": "M",
+#   "language": "E",
+#   "phoneNumber": "7865720987",
+#   "email": "sujay.spring@itelo.info",
+#   "loginName": "SPRINGS",
+#   "Currency_code": "USD",
+#   "salaryAmount": 55549,
+#   "accountNumber": "111222333",
+#   "bankId": "51000655",
+#   "bankName": "My Bank of Antioch"
+# }
+
+//get the employee which created
+
+# http://localhost:4004/odata/v4/CatalogService/EmployeeSet/02BD2137-0890-1EEA-A6C2-BB55C19782FB
+
+
+//update employee salary
+# PATCH http://localhost:4004/odata/v4/CatalogService/EmployeeSet('02BD2137-0890-1EEA-A6C2-BB55C19783FB')
+# Content-Type: application/json
+
+# {
+#   "salaryAmount": 999999,
+#   "Currency_code": "EUR"
+# }
+
+
+//display all POs(puchase orders)
+# GET http://localhost:4004/odata/v2/CatalogService/POs
+
+//get single POs
+# GET http://localhost:4004/odata/v4/CatalogService/POs/74867AD200E41EDBA5D8B0C98DC34052
+
+#  GET http://localhost:4004/odata/v2/CatalogService/POs/74867AD200E41EDBA5D8B0C98DC34052
+
+
+//get main entity and associated entity together 
+# GET http://localhost:4004/odata/v2/CatalogService/POs/74867AD200E41EDBA5D8B0C98DC34052?$expand=Items
+
+//boost a order
+
+# POST http://localhost:4004/odata/v2/CatalogService/POs('74867AD200E41EDBA5D8B0C98DC34052')/CatalogService.boost
+# Content-Type: application/json
+
+# {}
+
+# largestOrder 
+# GET http://localhost:4004/odata/v2/CatalogService/POs('74867AD200E41EDBA5D8B0C98DC34052')/CatalogService.largestOrder
+
+# customcode get entity
+# GET http://localhost:4004/odata/v2/My/ReadEmployeeSrv
+
+# top 10 records
+# GET http://localhost:4004/odata/v2/My/ReadEmployeeSrv
+
+# select employees whose salary less than 50000
+# GET http://localhost:4004/odata/v2/My/ReadEmployeeSrv?$filter=salaryAmount lt 50000&$top=10
+
+# select employees based on ID or entity get with dynamic where
+# GET http://localhost:4004/odata/v2/My/ReadEmployeeSrv/02BD2137-0890-1EEA-A6C2-BB55C19786FB
+
+# post to insert data using create from myservice.js genric handler
+# POST  http://localhost:4004/odata/v4/my/InsertReadEmployeeSrv
+# Content-Type: application/json
+
+# {
+#     "ID": "02BD2137-0890-1EEA-A6C2-BB55C19786FB",
+#     "nameFirst": "Nagesh",
+#     "nameMiddle": null,
+#     "nameLast": "Chamala",
+#     "nameInitials": null,
+#     "sex": "F",
+#     "language": "E",
+#     "phoneNumber": "7898765434",
+#     "email": "Anubhav.spring@itelo.info",
+#     "loginName": "SPRINGS",
+#     "Currency_code": "USD",
+#     "salaryAmount": "55549",
+#     "accountNumber": "9087653679",
+#     "bankId": "123456",
+#     "bankName": "My Bank of Antioch"
+#     }
+
+# update the employee data using genric handler update
+# PATCH   http://localhost:4004/odata/v4/my/UpdateEmployeeSrv/02BD2137-0890-1EEA-A6C2-BB55C19786FB
+# Content-Type: application/json
+
+# {
+#     "nameFirst": "Prabhakar",
+#     "nameLast": "Chittipolu"
+# }
+
+# delete the employee record
+# DELETE http://localhost:4004/odata/v4/my/DeleteEmployeeSrv/02BD2137-0890-1EEA-A6C2-BB55C19786FB
+# Content-Type: application/json
+
+#security testing 
+# GET http://localhost:4004/odata/v2/CatalogService/EmployeeSet
+# Authorization: Basic sathwik:
+# Authorization: Basic ananya:
+
+#role level security testing sathwik can access all employees as his bankname is unrestricted but ananya can access only those employees whose bankname is either My Bank of New York or My Bank of America or My Bank of India
+# GET http://localhost:4004/odata/v2/CatalogService/EmployeeSet/$count
+# Authorization: Basic sathwik:
+# Authorization: Basic ananya:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
