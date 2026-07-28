@@ -17,7 +17,7 @@ module.exports = cds.service.impl(async function () {
             console.log("Hey, your PO with ID: ", req.params[0].ID + " will be boosted")
             const tx = cds.tx(req);
             await tx.update(POs).with({
-                GROSS_AMOUNT: { '+=': 20000 },
+                GROSS_AMOUNT: { '+=': 30000 },
                 NOTE: 'boosted!!'
             }).where({ID: ID})
         } catch (error) {
