@@ -125,10 +125,14 @@ service CatalogService @(
             Items                    : redirected to PurchaseOrderItems
         }
 
+        // actions {
+        //     action   boost();
+        //     function largestOrder() returns array of POs;
+        // };
         actions {
-            action   boost();
-            function largestOrder() returns array of POs;
-        };
+    action boost() returns POs;
+    function largestOrder() returns array of POs;
+};
 
     entity ProductSet         as projection on db.master.product;
 }

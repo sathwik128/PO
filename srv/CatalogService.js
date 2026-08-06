@@ -11,19 +11,39 @@ module.exports = cds.service.impl(async function () {
         }
     });
 
-    this.on('boost', async (req, res) => {
-        try {
-            const ID = req.params[0].ID;
-            console.log("Hey, your PO with ID: ", req.params[0].ID + " will be boosted")
-            const tx = cds.tx(req);
-            await tx.update(POs).with({
-                GROSS_AMOUNT: { '+=': 30000 },
-                NOTE: 'boosted!!'
-            }).where({ID: ID})
-        } catch (error) {
-            return "error" + error.toString();
-        }
-    });
+    // this.on('boost', async (req, res) => {
+    //     try {
+    //         const ID = req.params[0].ID;
+    //         console.log("Hey, your PO with ID: ", req.params[0].ID + " will be boosted")
+    //         const tx = cds.tx(req);
+    //         await tx.update(POs).with({
+    //             GROSS_AMOUNT: { '+=': 30000 },
+    //             NOTE: 'boosted!!'
+    //         }).where({ID: ID})
+    //     } catch (error) {
+    //         return "error" + error.toString();
+    //     }
+    // });
+
+    this.on('boost', async (req) => {
+
+    const ID = req.params[0].ID;
+    const tx = cds.tx(req);
+
+    // Update the record
+    await tx.update(POs)
+        .with({
+            GROSS_AMOUNT: { '+=': 30000 },
+            NOTE: 'boosted!!'
+        })
+        .where({ ID });
+
+    // Read the updated record
+    const updatedPO = await tx.read(POs).where({ ID });
+
+    // Return updated entity
+    return updatedPO[0];
+});
 
     this.on('largestOrder', async (req) => {
         try {
