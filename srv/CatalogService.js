@@ -33,7 +33,7 @@ module.exports = cds.service.impl(async function () {
     // Update the record
     await tx.update(POs)
         .with({
-            GROSS_AMOUNT: { '+=': 10000 },
+            GROSS_AMOUNT: { '+=': 15000 },
             NOTE: 'boosted!!'
         })
         .where({ ID });
