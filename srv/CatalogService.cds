@@ -55,7 +55,87 @@
 // }
 
 
-using {sathwik.db as db} from '../db/datamodel';
+// using {sathwik.db as db} from '../db/datamodel';
+
+// service CatalogService @(
+//     path    : 'CatalogService',
+//     requires: 'authenticated-user'
+// ) {
+
+//     @Capabilities: {
+//         Insertable,
+//         Deletable: false,
+//     }
+//     entity BusinessPartnerSet as projection on db.master.businesspartner;
+
+//     entity AddressSet         as projection on db.master.address;
+
+
+//     entity EmployeeSet @(restrict: [{
+//     grant: ['READ'],
+//     to   : 'Viewer',
+//     where: 'bankName  = $user.BankName'},
+//     {
+//     grant: ['READ'],
+//     to   : 'Admin'
+//   }
+//     ])                      as projection on db.master.employees;
+
+//     entity PurchaseOrderItems as projection on db.transaction.poitems;
+
+//     entity POs @(
+//         title              : 'Purchase Order',
+//         odata.draft.enabled: true
+//     )                         as
+//         projection on db.transaction.purchaseorder {
+
+//             // Explicit fields
+//             *,
+
+//                //Calculated field
+//                //round(GROSS_AMOUNT) as GROSS_AMOUNT : Decimal(10,2),
+
+//                // Status text conversion
+//                case
+//                    OVERALL_STATUS
+//                    when 'N'
+//                         then 'New'
+//                    when 'B'
+//                         then 'Blocked'
+//                    when 'D'
+//                         then 'Delivered'
+//                    when 'P'
+//                         then 'Planned'
+//                end as OVERALL_STATUS : String(20),
+
+//             // Criticality
+//             case
+//                 OVERALL_STATUS
+//                 when 'N'
+//                      then 2
+//                 when 'B'
+//                      then 1
+//                 when 'D'
+//                      then 3
+//                 when 'P'
+//                      then 3
+//                 else 1
+//             end    as Criticality    : Integer,
+
+//             Items                    : redirected to PurchaseOrderItems
+//         }
+
+//         actions {
+//             action   boost();
+//             function largestOrder() returns array of POs;
+//         };
+
+
+//     entity ProductSet         as projection on db.master.product;
+// }
+
+
+using { sathwik.db as db } from '../db/datamodel';
 
 service CatalogService @(
     path    : 'CatalogService',
@@ -64,72 +144,64 @@ service CatalogService @(
 
     @Capabilities: {
         Insertable,
-        Deletable: false,
+        Deletable: false
     }
     entity BusinessPartnerSet as projection on db.master.businesspartner;
 
-    entity AddressSet         as projection on db.master.address;
-
+    entity AddressSet as projection on db.master.address;
 
     entity EmployeeSet @(restrict: [{
-    grant: ['READ'],
-    to   : 'Viewer',
-    where: 'bankName  = $user.BankName'},
-    {
-    grant: ['READ'],
-    to   : 'Admin'
-  }
-    ])                      as projection on db.master.employees;
+        grant: ['READ'],
+        to: 'Viewer',
+        where: 'bankName = $user.BankName'
+    },{
+        grant: ['READ'],
+        to: 'Admin'
+    }]) as projection on db.master.employees;
 
     entity PurchaseOrderItems as projection on db.transaction.poitems;
 
     entity POs @(
-        title              : 'Purchase Order',
+        title: 'Purchase Order',
         odata.draft.enabled: true
-    )                         as
-        projection on db.transaction.purchaseorder {
+    ) as projection on db.transaction.purchaseorder {
 
-            // Explicit fields
-            *,
+        *,
 
-               //Calculated field
-               //round(GROSS_AMOUNT) as GROSS_AMOUNT : Decimal(10,2),
+        case
+            OVERALL_STATUS
+            when 'N' then 'New'
+            when 'B' then 'Blocked'
+            when 'D' then 'Delivered'
+            when 'P' then 'Planned'
+        end as OVERALL_STATUS : String(20),
 
-               // Status text conversion
-               case
-                   OVERALL_STATUS
-                   when 'N'
-                        then 'New'
-                   when 'B'
-                        then 'Blocked'
-                   when 'D'
-                        then 'Delivered'
-                   when 'P'
-                        then 'Planned'
-               end as OVERALL_STATUS : String(20),
+        case
+            OVERALL_STATUS
+            when 'N' then 2
+            when 'B' then 1
+            when 'D' then 3
+            when 'P' then 3
+            else 1
+        end as Criticality : Integer,
 
-            // Criticality
-            case
-                OVERALL_STATUS
-                when 'N'
-                     then 2
-                when 'B'
-                     then 1
-                when 'D'
-                     then 3
-                when 'P'
-                     then 3
-                else 1
-            end    as Criticality    : Integer,
+        Items : redirected to PurchaseOrderItems
 
-            Items                    : redirected to PurchaseOrderItems
-        }
+    } actions {
 
-        actions {
-            action   boost();
-            function largestOrder() returns array of POs;
-        };
+        @(
+            cds.odata.bindingparameter.name : '_it',
+            Common.SideEffects : {
+                TargetProperties : [
+                    '_it/GROSS_AMOUNT',
+                    '_it/NOTE'
+                ]
+            }
+        )
+        action boost() returns POs;
 
+        function largestOrder() returns array of POs;
+    };
 
-    entity ProductSet         as projection on db.master.product;
+    entity ProductSet as projection on db.master.product;
 }
